@@ -1,15 +1,19 @@
+import java.lang.Math;
+
 public class Mass{
-  protected int x;
-  protected int y;
+  protected float x;
+  protected float y;
   protected long mass;
   protected Vector velocity;
   protected Vector acceleration;
   protected Vector force;
   protected Vector momentum;
   
+  //double maxVelo = 3;
+  
   final double gravitationalConstant =  0.0000000000667;
   //Things to consider: having energy (kinetic, potential?)
-  
+ 
   public Mass(int x, int y, long mass){
     this.x = x;
     this.y = y;
@@ -21,29 +25,26 @@ public class Mass{
   }
   
   
-  public Mass(int x, int y, long mass, double vx, double vy, double ax, double ay, double fx, double fy, double mx, double my){
+  public Mass(int x, int y, long mass, double vx, double vy, double ax, double ay, double fx, double fy){
     this.x = x;
     this.y = y;
     this.mass = mass;
     velocity = new Vector(vx, vy);
     acceleration = new Vector(ax, ay);
     force = new Vector(fx, fy);
-    momentum = new Vector(mx, my);
   }
-    
-    
   
   int getX(){
-    return x;
+    return Math.round(x);
   }
-  void setX(int x){
+  void setX(float x){
     this.x = x;
   }
   
   int getY(){
-    return y;
+    return Math.round(y);
   }
-  void setY(int y){
+  void setY(float y){
     this.y = y;
   }
   
@@ -95,6 +96,14 @@ public class Mass{
     return 0;
   }
   
+  double getMomentumX(){
+    return this.mass*this.velocity.getX(); 
+  }
+  
+  double getMomentumY(){
+    return this.mass*this.velocity.getY(); 
+  }
+  
   void setPosition(int x, int y){
     this.x = x;
     this.y = y;
@@ -102,7 +111,7 @@ public class Mass{
   
 // might be more efficient not to do this for every mass, but a single function
 // in the main/gravity class/file
-  void calculateGravitationalForce(Mass[] allMasses){
+  void calculateGravitationalForce(Mass[] allMasses, float pixelsPerMeter){
     double sumFX = 0;
     double sumFY = 0;
     for(Mass obj: allMasses){
@@ -112,7 +121,8 @@ public class Mass{
       }
       
       //calculate x forces
-      double xRad = this.x - obj.x;
+      double xRad = (this.x - obj.x) / pixelsPerMeter;
+      
       if(xRad > 0){
         sumFX -= (gravitationalConstant * this.mass * obj.mass)/(xRad * xRad);
       }
@@ -121,18 +131,33 @@ public class Mass{
       }
       
       //calculate y forces
-      double yRad = this.y - obj.y;
+      double yRad = (this.y - obj.y) / pixelsPerMeter;
+      
       if(yRad > 0){ 
         sumFY -= (gravitationalConstant * this.mass * obj.mass)/(yRad * yRad);
       }
       else if(yRad < 0){
-        sumFY -= (gravitationalConstant * this.mass * obj.mass)/(yRad * yRad);
+        sumFY += (gravitationalConstant * this.mass * obj.mass)/(yRad * yRad);
       }
-     }
-     
-     this.force.setX(sumFX);
-     this.force.setY(sumFY);
-   }
+    }
+    //double maxForce = 50000000;
+    
+    //if(sumFX > maxForce)
+    //  sumFX = maxForce;
+      
+    //if(sumFY > maxForce)
+    //  sumFY = maxForce;
+      
+    //if(sumFX*-1 > maxForce)
+    //  sumFX = -1*maxForce;
+      
+    //if(sumFY*-1 > maxForce)
+    //  sumFY = -1*maxForce;
+    
+    
+    this.force.setX(sumFX);
+    this.force.setY(sumFY);
+  }
    
    //use the force to find acceleration a = f / m (Newton's 2nd law)
    void calculateGravitationalAcceleration(){
@@ -144,14 +169,44 @@ public class Mass{
    //to find the change in velocity (change in v = a * change in t)
    //add the change to the old velocity to get the new velocity
    void calculateGravitationalVelocity(float timeBetweenFrames){
-     this.velocity.setX(this.velocity.getX() + this.acceleration.getX()*timeBetweenFrames);
+     this.velocity.setX(this.velocity.getX() + this.acceleration.getX()*timeBetweenFrames);  
      this.velocity.setY(this.velocity.getY() + this.acceleration.getY()*timeBetweenFrames);
    }
   
   //use the velocity to get the new position based on how long has passed
   //this is a bit harder because x and y are actually not in meters but the velocity is
-  void calculateGravitationalDistance(float timeBetweenFrames, int pixelsPerMeter){
-    this.x += (this.velocity.getX()*timeBetweenFrames) * pixelsPerMeter;
-    this.y += (this.velocity.getY()*timeBetweenFrames) * pixelsPerMeter;  
+  void calculateGravitationalDistance(float timeBetweenFrames, float pixelsPerMeter){
+    //System.out.println("The x calculation " + (this.velocity.getX()*timeBetweenFrames) * pixelsPerMeter);
+    double xChange = (this.velocity.getX()*timeBetweenFrames) * pixelsPerMeter;
+    this.x += xChange;
+    double yChange = (this.velocity.getY()*timeBetweenFrames) * pixelsPerMeter;  
+    this.y += yChange;
+    //this.x += (this.velocity.getX()*timeBetweenFrames) * pixelsPerMeter;
+    //this.y += (this.velocity.getY()*timeBetweenFrames) * pixelsPerMeter;  
+    
+  }
+  
+  public void borderCollision(){
+    if(this.x > numPixelsX){
+      this.x = numPixelsX;
+      this.velocity.setX(this.velocity.getX() * -1);
+    }
+    else if(this.x < 0){
+      this.x = 0;
+      this.velocity.setX(this.velocity.getX() * -1);
+    }
+    
+    if(this.y > numPixelsY){
+      this.y = numPixelsY;
+      this.velocity.setY(this.velocity.getY() * -1);
+    }
+    else if(this.y < 0){
+      this.y =  0;
+      this.velocity.setY(this.velocity.getY() * -1);
+    }
   }
 }
+
+
+
+  
