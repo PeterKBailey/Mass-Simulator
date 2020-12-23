@@ -1,3 +1,4 @@
+//test
 public class Planet extends Mass{ 
   int id;
   int xCol, yCol, zCol;

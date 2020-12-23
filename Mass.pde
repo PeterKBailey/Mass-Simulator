@@ -1,3 +1,4 @@
+//test
 import java.lang.Math;
 import java.util.LinkedList;
 public class Mass{
