@@ -1,5 +1,5 @@
 import java.lang.Math;
-
+import java.util.LinkedList;
 public class Mass{
   protected float x;
   protected float y;
@@ -7,12 +7,11 @@ public class Mass{
   protected Vector velocity;
   protected Vector acceleration;
   protected Vector force;
-  protected Vector momentum;
   
-  //double maxVelo = 3;
+  protected LinkedList<Line> lines;
+  final int numLines = 50;
   
   final double gravitationalConstant =  0.0000000000667;
-  //Things to consider: having energy (kinetic, potential?)
  
   public Mass(int x, int y, long mass){
     this.x = x;
@@ -21,7 +20,7 @@ public class Mass{
     velocity = new Vector(0, 0);
     acceleration = new Vector(0, 0);
     force = new Vector(0, 0);
-    momentum = new Vector(0, 0);
+    lines = new LinkedList<Line>();
   }
   
   
@@ -32,6 +31,7 @@ public class Mass{
     velocity = new Vector(vx, vy);
     acceleration = new Vector(ax, ay);
     force = new Vector(fx, fy);
+    lines = new LinkedList<Line>();
   }
   
   int getX(){
@@ -79,132 +79,111 @@ public class Mass{
     force.y = f.y;
   }
   
-   Vector getMomentum(){
-    return momentum;
-  }
-  void setMomentum(Vector m){
-    force.x = m.x;
-    force.y = m.y;
-  }
-  
-  int findNewPositionX(){
-    //kinematics and stuff here
-    return 0;
-  }
-  int findNewPositionY(){
-    //kinematics and stuff here
-    return 0;
-  }
-  
+  //possible that these should be a single method returning a vector
   double getMomentumX(){
     return this.mass*this.velocity.getX(); 
   }
-  
   double getMomentumY(){
     return this.mass*this.velocity.getY(); 
   }
   
-  void setPosition(int x, int y){
-    this.x = x;
-    this.y = y;
-  }
   
-// might be more efficient not to do this for every mass, but a single function
-// in the main/gravity class/file
+
+  /*
+  Function:   calculateGravitationalForce
+   Purpose:   Determine all gravitational forces being applied to the calling Mass
+        in:   Array of every mass in the simulation
+        in:   Float representing how many pixels represent one meter
+*/
   void calculateGravitationalForce(Mass[] allMasses, float pixelsPerMeter){
     double sumFX = 0;
     double sumFY = 0;
     for(Mass obj: allMasses){
-      //the current object is the one we're calculating mass for
-      if(this.x == obj.x && this.y == obj.y){
-        continue;
-      }
       
-      //calculate x forces
       double xRad = (this.x - obj.x) / pixelsPerMeter;
-      
+      double yRad = (this.y - obj.y) / pixelsPerMeter;
+
+      double squaredX = xRad*xRad;
+      double squaredY = yRad*yRad;
+    
+      //calculate x forces
       if(xRad > 0){
-        sumFX -= (gravitationalConstant * this.mass * obj.mass)/(xRad * xRad);
+        sumFX -= (gravitationalConstant * this.mass * obj.mass)/(squaredX);
       }
       else if(xRad < 0){
-        sumFX += (gravitationalConstant * this.mass * obj.mass)/(xRad * xRad);
+        sumFX += (gravitationalConstant * this.mass * obj.mass)/(squaredX);
       }
       
       //calculate y forces
-      double yRad = (this.y - obj.y) / pixelsPerMeter;
-      
+
       if(yRad > 0){ 
-        sumFY -= (gravitationalConstant * this.mass * obj.mass)/(yRad * yRad);
+        sumFY -= (gravitationalConstant * this.mass * obj.mass)/(squaredY);
       }
       else if(yRad < 0){
-        sumFY += (gravitationalConstant * this.mass * obj.mass)/(yRad * yRad);
+        sumFY += (gravitationalConstant * this.mass * obj.mass)/(squaredY);
       }
     }
-    //double maxForce = 50000000;
-    
-    //if(sumFX > maxForce)
-    //  sumFX = maxForce;
-      
-    //if(sumFY > maxForce)
-    //  sumFY = maxForce;
-      
-    //if(sumFX*-1 > maxForce)
-    //  sumFX = -1*maxForce;
-      
-    //if(sumFY*-1 > maxForce)
-    //  sumFY = -1*maxForce;
-    
-    
-    this.force.setX(sumFX);
-    this.force.setY(sumFY);
+    force.setX(sumFX);
+    force.setY(sumFY);
   }
    
-   //use the force to find acceleration a = f / m (Newton's 2nd law)
-   void calculateGravitationalAcceleration(){
+/*
+  Function:   calculateAcceleration
+   Purpose:   Determine the acceleration for the mass based on its force vector
+              a = f / m
+*/
+   void calculateAcceleration(){
      this.acceleration.setX(this.force.getX() / this.mass);
      this.acceleration.setY(this.force.getY() / this.mass);
    }
    
-   //use the acceleration, along with how long has passed since the last time this was called
-   //to find the change in velocity (change in v = a * change in t)
-   //add the change to the old velocity to get the new velocity
-   void calculateGravitationalVelocity(float timeBetweenFrames){
-     this.velocity.setX(this.velocity.getX() + this.acceleration.getX()*timeBetweenFrames);  
-     this.velocity.setY(this.velocity.getY() + this.acceleration.getY()*timeBetweenFrames);
+
+/*
+  Function:   calculateVelocity
+   Purpose:   Determine the velocity for the mass based on its acceleration vector and the old velocity
+              Delta v = a * delta t
+        in:   Float representing how much time passes between frames
+*/
+   void calculateVelocity(float timeBetweenFrames){
+     double newVeloX = this.velocity.getX() + this.acceleration.getX()*timeBetweenFrames;
+     double newVeloY = this.velocity.getY() + this.acceleration.getY()*timeBetweenFrames;
+      
+     this.velocity.setX(newVeloX);  
+     this.velocity.setY(newVeloY);
    }
   
-  //use the velocity to get the new position based on how long has passed
-  //this is a bit harder because x and y are actually not in meters but the velocity is
-  void calculateGravitationalDistance(float timeBetweenFrames, float pixelsPerMeter){
-    //System.out.println("The x calculation " + (this.velocity.getX()*timeBetweenFrames) * pixelsPerMeter);
+  
+/*
+  Function:   calculateNewPosition
+   Purpose:   Determine the next position for the mass based on its velocity vector and the old position
+              Delta d = v * delta t
+        in:   Float representing how much time passes between frames
+        in:   Float representing how many pixels make up a meter
+*/
+  void calculateNewPosition(float timeBetweenFrames, float pixelsPerMeter){
     double xChange = (this.velocity.getX()*timeBetweenFrames) * pixelsPerMeter;
-    this.x += xChange;
     double yChange = (this.velocity.getY()*timeBetweenFrames) * pixelsPerMeter;  
+    if(numLines == lines.size()){
+      lines.remove(0);
+    }
+    lines.add( new Line( this.x, this.y, (float)(this.x+xChange), (float)(this.y+yChange) ) );
+    this.x += xChange;
     this.y += yChange;
-    //this.x += (this.velocity.getX()*timeBetweenFrames) * pixelsPerMeter;
-    //this.y += (this.velocity.getY()*timeBetweenFrames) * pixelsPerMeter;  
-    
   }
   
-  public void borderCollision(){
-    if(this.x > numPixelsX){
-      this.x = numPixelsX;
-      this.velocity.setX(this.velocity.getX() * -1);
-    }
-    else if(this.x < 0){
-      this.x = 0;
-      this.velocity.setX(this.velocity.getX() * -1);
-    }
-    
-    if(this.y > numPixelsY){
-      this.y = numPixelsY;
-      this.velocity.setY(this.velocity.getY() * -1);
-    }
-    else if(this.y < 0){
-      this.y =  0;
-      this.velocity.setY(this.velocity.getY() * -1);
+  /*
+  Function:   printLines
+   Purpose:   print the path which the calling mass has followed
+*/
+  public void printLines(){
+    for(Line currLine: lines){
+      line(currLine.sx, currLine.sy, currLine.fx, currLine.fy);
     }
   }
+  
+
+  
+  
 }
 
 

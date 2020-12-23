@@ -26,56 +26,36 @@ Planet p2 = new Planet(600, 400, 10000000000L, 20, numPlanets++);
 void setup(){
   surface.setSize(numPixelsX, numPixelsY);
   frameRate(frameRate);
-  //p2.setVelocity(new Vector(-0.5,-0.4));
-  //p3.setVelocity(new Vector(0.4,-0.1));
-  p2.setVelocity(new Vector(0, -1));
+  //p2.setVelocity(new Vector(-1, 0));
   System.out.println("radius in m: " + (p.getRadius() / pixelsPerMeter));
 } 
 
+//for calculating force of gravity
 Mass allMasses[] = {p, p2};
+//for calculating planetary collisions
 Planet allPlanets[] = {p, p2};
-boolean julian = true;
+
+//Loop for drawing the sketch
 void draw(){
   background(155);
-  //p.display();
-  //p2.display();
-  //p3.display();
-  //handleCollisions(allPlanets, numPlanets);
   
-  p.calculateGravitationalForce(allMasses, pixelsPerMeter);
-  p2.calculateGravitationalForce(allMasses, pixelsPerMeter);
-  //p3.calculateGravitationalForce(allMasses, pixelsPerMeter);
-
-  System.out.println("F p: " + p.getForce().getX() + " and " + p.getForce().getY());
-  System.out.println("F p2: " + p2.getForce().getX() + " and " + p2.getForce().getY());
-    
-  p.calculateGravitationalAcceleration();
-  p2.calculateGravitationalAcceleration();
-  //p3.calculateGravitationalAcceleration();
-  
-  p.calculateGravitationalVelocity(secondsPerFrame);
-  p2.calculateGravitationalVelocity(secondsPerFrame);
-  //p3.calculateGravitationalVelocity(secondsPerFrame);
-  System.out.println("V p: " + p.getVelocity().getX() + " and " + p.getVelocity().getY());
-  System.out.println("V p2: " + p2.getVelocity().getX() + " and " + p2.getVelocity().getY());
-
-  p.calculateGravitationalDistance(secondsPerFrame, pixelsPerMeter);
-  System.out.println(p.getX() + " and " + p.getY());
-  p2.calculateGravitationalDistance(secondsPerFrame, pixelsPerMeter);
-  System.out.println(p2.getX() + " and " + p2.getY());
-  //p3.calculateGravitationalDistance(secondsPerFrame, pixelsPerMeter);
- 
- 
-   handleCollisions(allPlanets, numPlanets);
-   //p.borderCollision();
-   //p2.borderCollision();
+  handleGravity(allMasses, pixelsPerMeter, secondsPerFrame);
+  handleCollisions(allPlanets, numPlanets);  
 
   p.display();
   p2.display();
-  //p3.display();
+  
 }
 
-//this is gonna be kinda hard tbh...
+//Ideally, all functions in this file other than setup and draw would be static functions belonging to the other classes
+//unfortunately that doesn't seem to work with processing because all the other classes are inner classes
+
+/*
+  Function:   handleCollisions
+   Purpose:   Inspect all planets and alter velocities using conservation of momentum and energy if there is a collision
+        in:   Every planet currently in the simulation
+       out:   Planets which have their velocities updated if they have collided
+*/
 void handleCollisions(Planet[] allPlanets, int numPlanets){
   boolean julian = true;
   for(int i = 0; i<numPlanets; i++){
@@ -100,5 +80,22 @@ void handleCollisions(Planet[] allPlanets, int numPlanets){
         allPlanets[j].setVelocity(new Vector(newVeloJX, newVeloJY));
       }
     }
+    allPlanets[i].borderCollision();
   }
 }
+
+/*
+  Function:   handleGravity
+   Purpose:   handle how gravity affects all masses in the simulation
+        in:   Array of every mass used for calculating the gravitational forces being applied to every mass
+        in:   Float containing how many pixels represent one meter 
+        in:   Float representing how many seconds should pass in a single frame
+*/
+public void handleGravity(Mass[] allMasses, float pixelsPerMeter, float secondsPerFrame){
+    for(Mass obj: allMasses){
+       obj.calculateGravitationalForce(allMasses, pixelsPerMeter);
+       obj.calculateAcceleration();
+       obj.calculateVelocity(secondsPerFrame);
+       obj.calculateNewPosition(secondsPerFrame, pixelsPerMeter);
+    }
+  }

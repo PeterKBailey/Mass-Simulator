@@ -16,6 +16,7 @@ public class Planet extends Mass{
    
   void display(){
     ellipse(Math.round(x), Math.round(y), radius*2, radius*2);
+    this.printLines();
   }
  
   int getId(){
@@ -26,44 +27,33 @@ public class Planet extends Mass{
     return radius;
   }
   
-  //void calculateGravitationalForce(Planet[] allMasses, float pixelsPerMeter){
-  //  double sumFX = 0;
-  //  double sumFY = 0;
-  //  for(Planet obj: allMasses){
-  //    //the current object is the one we're calculating mass for
-  //    if(this.x == obj.x && this.y == obj.y){
-  //      continue;
-  //    }
-      
-  //    //calculate x forces
-  //    double xRad = (this.x - obj.x) / pixelsPerMeter;
-  //    double yRad = (this.y - obj.y) / pixelsPerMeter;
-
-  //    //if(Math.abs(xRad) < Math.max(this.getRadius(), obj.getRadius())){
-  //    //  xRad = Math.max(this.getRadius(), obj.getRadius());
-  //    //}
-      
-  //    //if(Math.abs(yRad) < Math.max(this.getRadius(), obj.getRadius())){
-  //    //   yRad = Math.max(this.getRadius(), obj.getRadius());
-  //    //}
-      
-      
-  //    if(xRad > 0){
-  //      sumFX -= (gravitationalConstant * this.mass * obj.mass)/(xRad * xRad);
-  //    }
-  //    else if(xRad < 0){
-  //      sumFX += (gravitationalConstant * this.mass * obj.mass)/(xRad * xRad);
-  //    }
-      
-      
-  //    if(yRad > 0){ 
-  //      sumFY -= (gravitationalConstant * this.mass * obj.mass)/(yRad * yRad);
-  //    }
-  //    else if(yRad < 0){
-  //      sumFY += (gravitationalConstant * this.mass * obj.mass)/(yRad * yRad);
-  //    }
-  //  }
-  //  this.force.setX(sumFX);
-  //  this.force.setY(sumFY);
-  //}
+  
+  /*
+  Function:   borderCollisions
+   Purpose:   Check if the calling planet has collided with one of the borders of the window
+              and bounce it off the wall
+*/
+  public void borderCollision(){
+    //right wall
+    if(this.x + radius > numPixelsX){
+      this.x = numPixelsX - radius;
+      this.velocity.setX(this.velocity.getX() * -1);
+    }
+    //left wall
+    else if(this.x - radius < 0){
+      this.x = 0 + radius;
+      this.velocity.setX(this.velocity.getX() * -1);
+    }
+    
+    //floor
+    if(this.y + radius > numPixelsY){
+      this.y = numPixelsY - radius;
+      this.velocity.setY(this.velocity.getY() * -1);
+    }
+    //roof
+    else if(this.y - radius < 0){
+      this.y =  0 + radius;
+      this.velocity.setY(this.velocity.getY() * -1);
+    }
+  }
 }

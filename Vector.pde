@@ -24,6 +24,7 @@ public class Vector{
     this.y = y;
   }
   
+  //calculate the magnitude of the vector
   double getMagnitude(){
     double sum = x*x + y*y;
     return Math.sqrt(sum);
