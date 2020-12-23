@@ -87,14 +87,18 @@ public class Mass{
     return this.mass*this.velocity.getY(); 
   }
   
-  
+  private boolean isSameSign(double a, double b){
+    return a*b >= 0;
+  }
 
-  /*
+ /*
   Function:   calculateGravitationalForce
    Purpose:   Determine all gravitational forces being applied to the calling Mass
         in:   Array of every mass in the simulation
         in:   Float representing how many pixels represent one meter
 */
+    boolean julian = false;
+
   void calculateGravitationalForce(Mass[] allMasses, float pixelsPerMeter){
     double sumFX = 0;
     double sumFY = 0;
@@ -123,8 +127,25 @@ public class Mass{
         sumFY += (gravitationalConstant * this.mass * obj.mass)/(squaredY);
       }
     }
+    
+    //sort of fixes the problems, still not a very convincing orbit being formed
+    //also this might not work well with other mass combinations
+    //double maxForce = 50000000L;
+    
+    //if(sumFX > maxForce)
+    //  sumFX = maxForce;
+    //else if(sumFX*-1 > maxForce)
+    //  sumFX = maxForce*-1;
+      
+    //if(sumFY > maxForce)
+    //  sumFY = maxForce;
+    //else if(sumFY*-1 > maxForce)
+    //  sumFY = maxForce*-1;
+    
+    
     force.setX(sumFX);
     force.setY(sumFY);
+
   }
    
 /*
@@ -133,8 +154,24 @@ public class Mass{
               a = f / m
 */
    void calculateAcceleration(){
-     this.acceleration.setX(this.force.getX() / this.mass);
-     this.acceleration.setY(this.force.getY() / this.mass);
+     
+     double accX = this.force.getX() / this.mass;
+     double accY = this.force.getY() / this.mass;
+     
+     double maxAcc = 0.005;
+    
+    if(accX > maxAcc)
+      accX = maxAcc;
+    else if(accX*-1 > maxAcc)
+      accX = maxAcc*-1;
+      
+    if(accY > maxAcc)
+      accY = maxAcc;
+    else if(accY*-1 > maxAcc)
+      accY = maxAcc*-1;
+    
+     this.acceleration.setX(accX);
+     this.acceleration.setY(accY);
    }
    
 

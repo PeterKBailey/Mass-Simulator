@@ -1,11 +1,15 @@
 public class Planet extends Mass{ 
   int id;
+  int xCol, yCol, zCol;
   //Things to consider: having energy (kinetic, potential?)
   float radius;
   public Planet(int x, int y, long mass, float radius, int id){
     super(x, y, mass);
     this.radius = radius;
     this.id = id;
+    xCol = 0;
+    yCol = 0;
+    zCol = 0;
   }
   
   public Planet(int x, int y, long mass, float radius, double vx, double vy, double ax, double ay, double fx, double fy, int id){
@@ -15,8 +19,13 @@ public class Planet extends Mass{
   }
    
   void display(){
+    //System.out.println(xCol + " " + yCol + " " + zCol);
+    fill(xCol, yCol, zCol);
     ellipse(Math.round(x), Math.round(y), radius*2, radius*2);
     this.printLines();
+    xCol = 0;
+    yCol = 0;
+    zCol = 0;
   }
  
   int getId(){
@@ -27,6 +36,11 @@ public class Planet extends Mass{
     return radius;
   }
   
+  void setColour(int x, int y, int z){
+    this.xCol = x;
+    this.yCol = y;
+    this.zCol = z;
+  }
   
   /*
   Function:   borderCollisions

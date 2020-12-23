@@ -19,31 +19,38 @@ float secondsPerFrame = 1;
 
 //might need to switch masses to a different unit and fix the equations...
 Planet p = new Planet(300, 100, 10000000000000L, 60, numPlanets++);
-Planet p2 = new Planet(600, 400, 10000000000L, 20, numPlanets++);
-//Planet p3 = new Planet (100, 300, 100, 10, numPlanets++); 
-
+Planet p2 = new Planet(600, 450, 10000000000L, 20, numPlanets++);
+Planet p3 = new Planet (100, 300, 10000000, 10, numPlanets++);
+//Planet p3 = new Planet(500, 450, 100000000, 20, numPlanets++);
 
 void setup(){
   surface.setSize(numPixelsX, numPixelsY);
   frameRate(frameRate);
-  //p2.setVelocity(new Vector(-1, 0));
+  p2.setVelocity(new Vector(-0.5, 0));
   System.out.println("radius in m: " + (p.getRadius() / pixelsPerMeter));
 } 
 
 //for calculating force of gravity
-Mass allMasses[] = {p, p2};
+Mass allMasses[] = {p, p2, p3};
 //for calculating planetary collisions
-Planet allPlanets[] = {p, p2};
+Planet allPlanets[] = {p, p2, p3};
 
 //Loop for drawing the sketch
 void draw(){
   background(155);
+  p.setColour(200,150,0);
+  p2.setColour(100,200,0);
+  p3.setColour(0, 200, 100);
+  //p4.setColour(1, 55, 55);
+  
   
   handleGravity(allMasses, pixelsPerMeter, secondsPerFrame);
   handleCollisions(allPlanets, numPlanets);  
 
   p.display();
   p2.display();
+  p3.display();
+  //p4.display();
   
 }
 
@@ -57,13 +64,29 @@ void draw(){
        out:   Planets which have their velocities updated if they have collided
 */
 void handleCollisions(Planet[] allPlanets, int numPlanets){
-  boolean julian = true;
   for(int i = 0; i<numPlanets; i++){
     for(int j = i+1; j<numPlanets; j++){
-      //the radius between the two centers of the planets
-      double r = Math.sqrt( Math.pow((allPlanets[i].getX() - allPlanets[j].getX()), 2) + Math.pow((allPlanets[i].getY() - allPlanets[j].getY()), 2) );
+      
+      //the lengths on the axies between the two centers of the planets
+      float xLen = allPlanets[i].getX() - allPlanets[j].getX();
+      float yLen = allPlanets[i].getY() - allPlanets[j].getY();
+      
+      double r = Math.sqrt( Math.pow(xLen, 2) + Math.pow(yLen, 2) );
       if( r <= (allPlanets[i].getRadius() + allPlanets[j].getRadius()) ){
-               
+       
+        //the hypotenuse distance which one planet must travel to be outside of the other planet
+        //the overlap length if you will
+        double distanceBack = Math.abs( Math.abs( r - allPlanets[i].getRadius() ) - allPlanets[j].getRadius() );
+          
+        //the ratio of the  distance between the 2 radii and the X and Y axies of the triangle
+        float xRatio = (float)r / xLen;
+        float yRatio = (float)r / yLen;
+        
+        //that ratio is the same as for the hypotenuse and X and Y axis of the overlap distance
+        allPlanets[j].setX(allPlanets[j].getX() - xRatio*(float)distanceBack);
+        allPlanets[j].setY(allPlanets[j].getY() - yRatio*(float)distanceBack);
+
+        //These are the conservation of momentum and conservation of (kinetic) energy equations used to solve for the final velocities
         double newVeloIX = ( (allPlanets[i].getMass() - allPlanets[j].getMass()) / (allPlanets[i].getMass() + allPlanets[j].getMass()) ) * allPlanets[i].getVelocity().getX();
         newVeloIX += ( (2 * allPlanets[j].getMass()) / (allPlanets[i].getMass() + allPlanets[j].getMass()) ) * allPlanets[j].getVelocity().getX();
         
@@ -80,7 +103,7 @@ void handleCollisions(Planet[] allPlanets, int numPlanets){
         allPlanets[j].setVelocity(new Vector(newVeloJX, newVeloJY));
       }
     }
-    allPlanets[i].borderCollision();
+    //allPlanets[i].borderCollision();
   }
 }
 
