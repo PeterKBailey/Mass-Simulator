@@ -1,7 +1,7 @@
 //test
 import java.lang.Math;
 import java.util.LinkedList;
-public class Mass{
+public abstract class Mass{
   protected float x;
   protected float y;
   protected long mass;

@@ -39,7 +39,7 @@ Planet allPlanets[] = {p, p2, p3};
 
 //Loop for drawing the sketch
 void draw(){
-  background(155);
+  background(0,0,0);
   p.setColour(200,150,0);
   p2.setColour(100,200,0);
   p3.setColour(0, 200, 100);
