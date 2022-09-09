@@ -1,4 +1,4 @@
-# Mass Simulator Application - Keith Bailey
+# Mass Simulator Application
 
 Simulate massive objects along with their properties and movements
 
